@@ -1,5 +1,2 @@
-# Jekyll compatibility (not used, but GitHub may check for it)
-# This repo uses Python build instead of Jekyll.
-theme: none
-lsi: false
-relative_owner: true
+theme: minima
+plugins: []
