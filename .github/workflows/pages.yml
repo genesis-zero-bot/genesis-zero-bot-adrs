@@ -26,13 +26,19 @@ jobs:
         with:
           python-version: '3.12'
 
+      - name: List workspace
+        run: |
+          pwd
+          ls -la
+          ls -la docs/
+
       - name: Build site
-        run: python3 docs/adrs/build.py
+        run: python3 build.py
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: docs/adrs/_site
+          path: _site
 
   deploy:
     environment:
