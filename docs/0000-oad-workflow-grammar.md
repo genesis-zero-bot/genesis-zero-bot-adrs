@@ -97,7 +97,8 @@ OAD modules M3–M10 require pieces that do not exist yet.
 
 | Phase | Actions |
 |-------|---------|
-| **Phase 1** (now) | M1 + M2 using git.
+| **Phase 1** (now) | M1 + M2 using git. |
+
 M10 using SurrealDB.
 Approximate M3 ecological intent with checklists until coefficient database is available. |
 | **Phase 2** (3–6 months) | Build M3–M7 incrementally.

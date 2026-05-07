@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ADR 0007: Kabanov Continuous Attention — AGI Model for Integral Stack</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>%F0%9F%93%9B</text></svg>">
+    <link rel="stylesheet" href="assets/adr.css">
+    <link rel="stylesheet" href="assets/style.css">
+    <style>body{ --t: 0; } @media(prefers-color-scheme:dark){body{--t:1}}</style>
+</head>
+<body class="dark">
+    <header class="site-header">
+        <div class="container">
+            <div class="header-row"><h1><a href="index.html">RegenTribes ADRs</a></h1><button id="theme-toggle" aria-label="Toggle theme" onclick="toggleTheme()">&#9790;</button></div>
+            <p>Architecture Decision Records &mdash; MADR format, ASD-STE100</p>
+        </div>
+    </header>
+    <header class="site-header">
+        <div class="container">
+            <h1><a href="index.html">RegenTribes ADRs</a></h1>
+            <p>Architecture Decision Records &mdash; MADR format, ASD-STE100</p>
+        </div>
+    </header>
+    <main class="container">
+        <nav class="adr-nav"><a href="index.html">&#8592; All ADRs</a></nav>
+        <article class="adr-article">
+            <header class="adr-header">
+                <h1 class="adr-title-heading">ADR 0007: Kabanov Continuous Attention — AGI Model for Integral Stack</h1>
+                <div class="adr-meta">
+                    <span class="status proposed">Proposed</span>
+                    <span class="meta-status"><strong>Status:</strong> Proposed</span> <span class="meta-date"><strong>Date:</strong> 2026-05-06</span> <span class="meta-domain"><strong>Domain:</strong> cognition</span> <span class="meta-level"><strong>Level:</strong> architecture</span> <span class="meta-authors"><strong>Authors:</strong> Genesis</span>
+                </div>
+                
+            </header>
+            <div class="section"><h2>Status</h2><p>
+Proposed</p></div>
+<div class="section"><h2>Context</h2><p>
+Alexei Kabanov describes an AGI model grounded in continuous attention movement.
+The core thesis: the atom of cognition is not an object, but a trajectory — a transition from one distinction to another.</p><p>The model specifies a 4-layer attention hierarchy, a gierarchical competition structure, a system broker, peripheral drivers, and a self-consciousness loop.
+It encodes 14,000+ generalizations, consolidated during dream state, with a binary tree of 400 core concepts.</p><p>The Integral stack (AME, ITC, agent memory) requires a cognitive substrate.
+Question: Can Kabanov's model serve this role?</p></div>
+<div class="section"><h2>Decision</h2><p>
+Integrate Kabanov's continuous attention model as the cognitive substrate for AME and ITC.</p><ul><li>AMEs use the 4-layer hierarchy for perception routing.</li><li>ITC uses the system broker and gierarchical competition for autonomous reasoning.</li><li>Agent memory uses peripheral drivers for transparent, reverse-traceable state encoding.</li></ul></div>
+<div class="section"><h2>Options Considered</h2><p>
+<table class="md-table"><thead><tr><th>Option</th><th>Description</th><th>Verdict</th></tr></thead><tbody><tr><td><strong>A</strong></td><td>Full Kabanov stack as cognitive substrate</td><td>✅ Adopt for architecture — provides complete attention model</td></tr><tr><td><strong>B</strong></td><td>Partial adoption (system broker only)</td><td>⚠️ Insufficient — peripheral drivers and attention hierarchy are coupled</td></tr><tr><td><strong>C</strong></td><td>Parallel run (Kabanov alongside existing AME)</td><td>❌ Rejected — dual cognitive substrates create conflict</td></tr><tr><td><strong>D</strong></td><td>No integration</td><td>❌ Rejected — misses opportunity for formal cognitive grounding</td></tr></tbody></table></div>
+<div class="section"><h3>Positive</h3><p>
+<ul><li>AME gains formal cognitive grounding in attention movement theory.</li><li>ITC gains gierarchical competition structure for autonomous reasoning.</li><li>Agent memory gains transparent, traceable encoding via peripheral drivers.</li><li>Community stakeholders gain auditability — every decision traces to sensor input.</li><li>Dream state consolidation maps to memory hygiene during idle cycles.</li><li>Pochemuchka curiosity drives map to active hypothesis testing.</li></ul></div>
+<div class="section"><h3>Negative</h3><p>
+<ul><li>Kabanov model is not yet formalized in code — requires implementation.</li><li>Peripheral driver transparency adds encoding overhead.</li><li>Gierarchical competition may create latency in time-sensitive IoT scenarios.</li><li>Dream state consolidation requires idle-cycle management.</li></ul></div>
+<div class="section"><h3>Risks</h3><p>
+<ul><li>Overfitting to single cognitive theory — keep AME interface abstract.</li><li>Generalizations may not scale to diverse sensor modalities (DHT22 vs soil moisture vs solar).</li><li>System broker becomes single point of failure if not replicated.</li></ul></div>
+<div class="section"><h3>Core Insight: Cognitive Atom Is a Transition</h3><p>
+Traditional AI treats perception as object recognition.
+Kabanov treats it as trajectory navigation — attention moves through phase space along learned routes.</p><p>This aligns with Active Inference: the brain is a prediction machine, not a classifier.
+AME (Active Model Engine) already uses this framing.
+Kabanov provides the formal trajectory model AME needs.</p></div>
+<div class="section"><h3>4-Layer Attention Hierarchy</h3><p>
+Layer 1 — Peripheral: raw sensorimotor tokens.
+Layer 2 — Semantic: character-level feature binding.
+Layer 3 — Contextual: features plus learned context.
+Layer 4 — Transcendent: values and purpose drive routing.</p><p>This maps cleanly to AME processing stages:</p><ul><li>Peripheral = sensor inputs (DHT22, soil moisture, current State)</li><li>Semantic = feature extraction (Bayes Net node scoring)</li><li>Contextual = causal inference with prior context</li><li>Transcendent = goal-state evaluation for action selection</li></ul></div>
+<div class="section"><h3>Gierarchical Competition</h3><p>
+Multiple super-generalizations compete for attention resources.
+The system broker ranks requests and builds optimal navigation routes.</p><p>This directly maps to ITC (Independent Thinking Controller):</p><ul><li>Each super-generalization is an ITC reasoning branch</li><li>The system broker is the ITC meta-controller</li><li>Confirmation/refutation/timeout map to ITC verdict cycles</li></ul></div>
+<div class="section"><h3>Peripheral Drivers Must Be Transparent</h3><p>
+Every peripheral driver must encode sensorimotor state transitions.
+It must be reverse-traceable — every decision can be followed back to a sensor event.</p><p>This is critical for community trust:</p><ul><li>RegenTribe members must be able to audit why a decision was made.</li><li>The "dark factory" (Vitali's end-to-end software factory) requires auditability.</li><li>Transparency maps to safety-case evidence in safety-critical deployments.</li></ul></div>
+<div class="section"><h3>Dream State Consolidation</h3><p>
+14,000+ generalizations consolidated into 400 core concepts via binary tree.
+This maps to memory consolidation in agent sleep cycles:</p><ul><li>Periodic consolidation of AME experience into generalization tree.</li><li>Drift detection triggers re-consolidation.</li><li>New generalizations enter at leaf nodes and propagate upward.</li></ul></div>
+<div class="section"><h3>Pochemuchka — Curiosity-Driven Learning</h3><p>
+The "why-asker" generates questions in character voices.
+It drives active learning by probing generalizations for weaknesses.</p><p>This maps to AME curiosity drives:</p><ul><li>AME generates hypotheses to test against environment.</li><li>Failed hypotheses trigger generalization restructuring.</li><li>Success confirms trajectory stability.</li></ul></div>
+<div class="section"><h3>Learning Bootstrap via Recursive Stories</h3><p>
+Large texts failed to trigger stable trajectory formation.
+Recursive iterative stories (e.g. "The House That Jack Built") succeeded.</p><p>This is a key finding for AME bootstrapping:</p><ul><li>Start with simple recursive structures, not corpus ingestion.</li><li>Build trajectory stability before introducing complex texts.</li><li>Map to story-level learning in community onboarding flows.</li></ul></div>
+<div class="section"><h3>Three Outcomes: Confirmation, Refutation, Timeout</h3><p>
+Every attention move has three possible outcomes:</p><ul><li>Confirmation: trajectory holds, continue.</li><li>Refutation/branch: trajectory fails, spawn new branch.</li><li>Uncertainty/timeout: insufficient data, await more evidence.</li></ul><p>AME already uses this pattern via Bayes Net scoring.
+ITC uses it for verdict cycling.</p></div>
+<div class="section"><h3>Prenotion: Trajectory History</h3><p>
+The system broker stores history of each generalization's trajectory.
+This is the agent's episodic memory.</p><p>AMEs must store:</p><ul><li>Sequence of attention moves per generalization.</li><li>Confirmation frequency per trajectory.</li><li>Drift events and consolidation timestamps.</li></ul><p>This provides explainability and auditability for RegenTribe stakeholders.</p></div>
+<div class="section"><h2>References</h2><p>
+<ul><li>Alexei Kabanov, AGI model (Russian transcript)</li><li>Active Inference Institute — Free Energy Principle</li><li>AME (Active Model Engine) — Integral stack design</li><li>ITC (Independent Thinking Controller) — Integral stack design</li><li>Integral Collective dark factory concept (Vitali)</li></ul></div>
+
+        </article>
+        <nav class="adr-nav"><a href="index.html">&#8592; All ADRs</a></nav>
+    </main>
+    <footer class="site-footer">
+        <div class="container">
+            <p>Generated 2026-05-07 09:23</p>
+        </div>
+    </footer>
+    <script>function toggleTheme(){const b=document.body;b.classList.toggle('dark');b.classList.toggle('light');localStorage.setItem('theme',b.classList.contains('dark')?'dark':'light')}document.addEventListener('DOMContentLoaded',()=>{const s=localStorage.getItem('theme');if(s){document.body.className=s}else if(window.matchMedia('(prefers-color-scheme: dark)').matches){document.body.className='dark'}else{document.body.className='light'}})</script>
+</body>
+</html>

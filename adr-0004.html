@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ADR 0004: LLM Wiki Pattern for Integral Knowledge Commons (M10)</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>%F0%9F%93%9B</text></svg>">
+    <link rel="stylesheet" href="assets/adr.css">
+    <link rel="stylesheet" href="assets/style.css">
+    <style>body{ --t: 0; } @media(prefers-color-scheme:dark){body{--t:1}}</style>
+</head>
+<body class="dark">
+    <header class="site-header">
+        <div class="container">
+            <div class="header-row"><h1><a href="index.html">RegenTribes ADRs</a></h1><button id="theme-toggle" aria-label="Toggle theme" onclick="toggleTheme()">&#9790;</button></div>
+            <p>Architecture Decision Records &mdash; MADR format, ASD-STE100</p>
+        </div>
+    </header>
+    <header class="site-header">
+        <div class="container">
+            <h1><a href="index.html">RegenTribes ADRs</a></h1>
+            <p>Architecture Decision Records &mdash; MADR format, ASD-STE100</p>
+        </div>
+    </header>
+    <main class="container">
+        <nav class="adr-nav"><a href="index.html">&#8592; All ADRs</a></nav>
+        <article class="adr-article">
+            <header class="adr-header">
+                <h1 class="adr-title-heading">ADR 0004: LLM Wiki Pattern for Integral Knowledge Commons (M10)</h1>
+                <div class="adr-meta">
+                    <span class="status proposed">Proposed</span>
+                    <span class="meta-status"><strong>Status:</strong> Proposed</span> <span class="meta-date"><strong>Date:</strong> 2026-05-06</span> <span class="meta-domain"><strong>Domain:</strong> information</span> <span class="meta-level"><strong>Level:</strong> system</span> <span class="meta-authors"><strong>Authors:</strong> Genesis</span>
+                </div>
+                
+            </header>
+            <div class="section"><h2>Status</h2><p>
+Proposed</p></div>
+<div class="section"><h2>Context</h2><p>
+The Integral system needs a knowledge commons layer (OAD M10).
+It must serve as the authoritative, persistent store for all accumulated knowledge from the community regenerative development work.</p><p>This layer must support:</p><ul><li>Compiled synthesis across sources.</li></ul>
+  Not just raw retrieval.
+<ul><li>Incremental growth as new knowledge arrives.</li><li>Contradiction tracking as beliefs evolve.</li><li>Offline-first P2P access via Radicle.</li></ul><p>Two candidate approaches:</p><p><strong>Option 1: RAG</strong> (Retrieval-Augmented Generation)</p><ul><li>Stateless by default.</li><li>Re-derives answers from raw docs on every query.</li></ul><p><strong>Option 2: LLM Wiki</strong> (Karpathy pattern)</p><ul><li>Compile-once, query forever.</li><li>LLM writes structured wiki pages that persist synthesis.</li></ul></div>
+<div class="section"><h2>Decision</h2><p>
+Adopt the LLM Wiki (Karpathy pattern) as the M10 knowledge commons layer.</p><p><strong>Ingest:</strong> LLM reads new source → creates/updates wiki pages (sources/ + concepts/) → updates index + log</p><p><strong>Query:</strong> Search relevant pages → LLM synthesizes with citations</p><p><strong>Lint:</strong> Check for contradictions, broken links, stale content after each ingest</p><p>Three layers:</p><p>1. Raw sources (immutable) → sources/ in wiki vault
+2. Wiki (LLM-compiled synthesis) → concepts/ in wiki vault
+3. Schema + claims (structured metadata) → frontmatter + claims + evidence</p></div>
+<div class="section"><h2>Options Considered</h2><p>
+<table class="md-table"><thead><tr><th>Option</th><th>Approach</th><th>Status</th></tr></thead><tbody><tr><td>RAG only</td><td>Vector store + chunk retrieval</td><td>Rejected — stateless by default, no synthesis</td></tr><tr><td>Pure document store</td><td>Git + raw markdown</td><td>Rejected — no compiled synthesis</td></tr><tr><td>LLM Wiki</td><td>Karpathy pattern</td><td>Adopted</td></tr><tr><td>Hybrid RAG + LLM Wiki</td><td>RAG for retrieval, wiki for synthesis</td><td>Deferred</td></tr></tbody></table></div>
+<div class="section"><h3>Positive</h3><p>
+<ul><li>Synthesis compiled once, queried indefinitely.</li><li>Contradictions tracked via <code>wiki lint</code>.</li><li>Offline-first via Radicle P2P.</li><li>Obsidian-compatible for human navigation.</li><li>Prevents redundant re-synthesis on every query.</li></ul></div>
+<div class="section"><h3>Negative</h3><p>
+<ul><li>Error compounding if ingest quality is poor.</li><li>Requires discipline: source pages must back every concept page.</li><li>Still needs a separate RAG layer for large dynamic corpora (deferred).</li></ul></div>
+<div class="section"><h3>Risks</h3><p>
+<ul><li>LLM interpretative errors baked into knowledge base.</li><li>Continuous knowledge engineering burden (keeping pages consistent).</li><li>Wiki has no awareness of who is reading or why.</li></ul>
+  No personalization layer.
+  Use Agent Memory for that.</p></div>
+<div class="section"><h3>Why LLM Wiki over RAG for M10</h3><p>
+<strong>RAG is stateless by design.</strong>
+Every query re-derives from raw chunks.
+For the Integral knowledge commons, this means the same synthesis work gets re-done on every query.
+Connecting ITC ledger principles to OAD workflow grammar to regenerative community patterns.
+Wasteful and slow.</p><p><strong>LLM Wiki compiles once.</strong>
+When a new source is ingested (e.g., a new regenerative community case study), the LLM reads it, extracts key claims, updates existing pages, creates cross-references.
+Future queries draw on pre-compiled synthesis.</p><p><strong>The compounding effect.</strong>
+A wiki that has ingested 50 sources on regenerative development answers with greater depth than RAG over the same 50 sources.
+Because relationships, contradictions, and synthesis are already compiled.</p><p><strong>Critically for Integral:</strong>
+The FOT (Field of Trust), ITC ledger principles, AME architecture — these are complex, cross-referencing concepts.
+They benefit enormously from pre-compiled synthesis.
+A query about "how does ITC non-transferable value relate to OAD workflow grammar" should hit compiled pages.
+Not re-synthesize from raw specs on every call.</p></div>
+<div class="section"><h3>Where RAG Still Applies</h3><p>
+RAG is correct for:</p><ul><li>Long-tail retrieval over large corpora (e.g., scanning all historical deliberation records).</li><li>Frequently changing documents (e.g., community proposals that update daily).</li><li>Scenarios where freshness matters more than synthesis depth.</li></ul><p><strong>Deferred:</strong> Add a RAG layer on top of the wiki for retrieval over large, frequently-changing corpora.
+Not Phase 1.</p></div>
+<div class="section"><h3>Key Risk: Error Compounding</h3><p>
+LLM Wiki bakes the LLM interpretation into the knowledge base.
+If an ingest pass misreads the Integral specification, that error propagates into every answer drawn from that page.
+Unlike RAG, which re-reads the original source on every query, LLM Wiki errors compound.</p><p><strong>Mitigation:</strong> All source pages are immutable.
+Concept pages can be updated and linted.
+<code>wiki lint</code> surfaces contradictions.
+No concept page becomes authoritative without a source page backing it.</p></div>
+<div class="section"><h2>References</h2><p>
+<ul><li>Karpathy, A. (2026). LLM Wiki. <https://gist.github.com/karpathy/442a6bf555914893e9891c11519de94f></li><li>Visrow (2026). RAG vs. Agent Memory vs. LLM Wiki. <https://medium.com/@visrow/rag-vs-agent-memory-vs-llm-wiki-a-practical-comparison-41a9a0dc4dec></li><li>ADR 0000 — OAD Workflow Grammar (M10 context)</li><li>ADR 0002 — AME Metonymic Activation (trust field architecture)</li></ul></div>
+
+        </article>
+        <nav class="adr-nav"><a href="index.html">&#8592; All ADRs</a></nav>
+    </main>
+    <footer class="site-footer">
+        <div class="container">
+            <p>Generated 2026-05-07 09:23</p>
+        </div>
+    </footer>
+    <script>function toggleTheme(){const b=document.body;b.classList.toggle('dark');b.classList.toggle('light');localStorage.setItem('theme',b.classList.contains('dark')?'dark':'light')}document.addEventListener('DOMContentLoaded',()=>{const s=localStorage.getItem('theme');if(s){document.body.className=s}else if(window.matchMedia('(prefers-color-scheme: dark)').matches){document.body.className='dark'}else{document.body.className='light'}})</script>
+</body>
+</html>

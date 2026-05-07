@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ADR 0001: Agent Knowledge Systems — Bonfires.ai and llm_wiki Rejected</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>%F0%9F%93%9B</text></svg>">
+    <link rel="stylesheet" href="assets/adr.css">
+    <link rel="stylesheet" href="assets/style.css">
+    <style>body{ --t: 0; } @media(prefers-color-scheme:dark){body{--t:1}}</style>
+</head>
+<body class="dark">
+    <header class="site-header">
+        <div class="container">
+            <div class="header-row"><h1><a href="index.html">RegenTribes ADRs</a></h1><button id="theme-toggle" aria-label="Toggle theme" onclick="toggleTheme()">&#9790;</button></div>
+            <p>Architecture Decision Records &mdash; MADR format, ASD-STE100</p>
+        </div>
+    </header>
+    <header class="site-header">
+        <div class="container">
+            <h1><a href="index.html">RegenTribes ADRs</a></h1>
+            <p>Architecture Decision Records &mdash; MADR format, ASD-STE100</p>
+        </div>
+    </header>
+    <main class="container">
+        <nav class="adr-nav"><a href="index.html">&#8592; All ADRs</a></nav>
+        <article class="adr-article">
+            <header class="adr-header">
+                <h1 class="adr-title-heading">ADR 0001: Agent Knowledge Systems — Bonfires.ai and llm_wiki Rejected</h1>
+                <div class="adr-meta">
+                    <span class="status accepted">Accepted</span>
+                    <span class="meta-status"><strong>Status:</strong> Accepted</span> <span class="meta-date"><strong>Date:</strong> 2026-05-06</span> <span class="meta-domain"><strong>Domain:</strong> information</span> <span class="meta-level"><strong>Level:</strong> system</span> <span class="meta-authors"><strong>Authors:</strong> Genesis</span>
+                </div>
+                
+            </header>
+            <div class="section"><h2>Status</h2><p>
+Accepted</p></div>
+<div class="section"><h2>Context</h2><p>
+Two knowledge system tools were evaluated as LLM wiki solutions for agent-resident knowledge management.</p><p><strong>Bonfires.ai</strong> is a hosted knowledge coordination platform.
+It transforms conversations (Telegram, Discord, forums) and documents into AI-accessible knowledge graphs.
+It provides real-time ingestion, knowledge graph visualization, and agent hooks.</p><p><strong>llm_wiki</strong> (github.com/nashsu/llm_wiki) is a desktop application.
+It implements Karpathy LLM Wiki pattern.
+It builds persistent wiki from documents using:</p><ul><li>graph relevance</li><li>vector search (LanceDB)</li><li>Louvain community detection</li><li>Deep Research</li></ul><p>It runs as an Electron desktop app.</p><p>Requirement: P2P/offline-resilient operation for total internet blackout scenario.
+Future migration path: embedded database plus reasoning system (SurrealDB, Hyperon).</p></div>
+<div class="section"><h2>Decision</h2><p>
+Reject both Bonfires.ai and llm_wiki.
+Adopt OpenClaw bundled <code>memory-wiki</code> plugin as Phase 1 solution.
+Add Syncthing for P2P sync.</p></div>
+<div class="section"><h2>Options Considered</h2><p>
+<table class="md-table"><thead><tr><th>Option</th><th>Description</th><th>Verdict</th></tr></thead><tbody><tr><td><strong>A</strong></td><td>Bonfires.ai (hosted)</td><td>❌ Rejected — subscription cost, no offline P2P mode</td></tr><tr><td><strong>B</strong></td><td>llm_wiki (desktop app)</td><td>❌ Rejected — not agent-integratable, desktop-only</td></tr><tr><td><strong>C</strong></td><td>memory-wiki plugin (OpenClaw bundled)</td><td>✅ Adopt — agent-native, configurable, Obsidian-compatible</td></tr><tr><td><strong>D</strong></td><td>Custom built on SurrealDB</td><td>⚠️ Phase 3 — requires more development</td></tr></tbody></table></div>
+<div class="section"><h3>Positive</h3><p>
+<ul><li>Agent-resident knowledge query without external dependency.</li><li>Provenance-rich wiki with structured claims (not prose-only).</li><li>P2P sync via Syncthing for offline resilience.</li><li>Obsidian-compatible vault for human editing.</li><li>Migration path preserved: Markdown → SurrealDB → Hyperon.</li></ul></div>
+<div class="section"><h3>Negative</h3><p>
+<ul><li>memory-wiki vault is Markdown files.</li></ul>
+  Slower to query than embedded vector DB.
+<ul><li>Syncthing requires manual setup on each node.</li><li>No native Louvain community detection (llm_wiki feature not ported).</li></ul></div>
+<div class="section"><h3>Risks</h3><p>
+<ul><li>Markdown vault grows large without compaction.</li><li>Syncthing conflicts may arise with concurrent edits on both nodes.</li><li>Phase 2 migration (SurrealDB) requires schema design work.</li></ul></div>
+<div class="section"><h3>Bonfires.ai — Why Rejected</h3><p>
+Failure mode 1: <strong>Subscription barrier</strong>
+Monthly cost is incompatible with budget-constrained community operation.</p><p>Failure mode 2: <strong>No offline P2P mode</strong>
+Bonfires.ai is server-hosted.
+It assumes live internet.
+During total blackout, it goes completely dark.</p><p>Failure mode 3: <strong>Proprietary knowledge graph</strong>
+Ingested knowledge stays in Bonfires infrastructure.
+It cannot be replicated or exported for P2P sync across nodes.</p><p>Failure mode 4: <strong>Integration gap</strong>
+Bonfires.ai overlaps with <code>genesis-brain</code> (SurrealDB semantic graph).
+Adopting Bonfires.ai would create duplicate infrastructure.</p></div>
+<div class="section"><h3>llm_wiki — Why Rejected</h3><p>
+Failure mode 1: <strong>Desktop-only architecture</strong>
+Electron app.
+No server mode.
+No headless operation.
+No API.
+Cannot be wired to an agent.</p><p>Failure mode 2: <strong>Requires manual app running</strong>
+The app must be open and running to serve wiki queries.
+It goes dark when the app is closed.</p><p>Failure mode 3: <strong>No P2P sync mechanism</strong>
+Single-user desktop app.
+No sync.
+No collaboration.
+No mesh resilience.</p><p>Failure mode 4: <strong>Right idea, wrong implementation for agents</strong>
+The underlying methodology is excellent:</p><ul><li>Incremental wiki</li><li>Two-step ingest</li><li>Wikilinks</li><li>Source traceability</li></ul><p>The implementation is not designed for agent integration.</p></div>
+<div class="section"><h3>memory-wiki — Why Adopted</h3><p>
+OpenClaw bundled <code>memory-wiki</code> plugin:</p><ul><li>Agent-native: exposed as <code>wiki_search</code>, <code>wiki_get</code>, <code>wiki_apply</code>, <code>wiki_lint</code> tools</li><li>Bridge mode: imports from active memory plugin (QMD, etc.)</li><li><code>isolated</code> mode: owns its own vault, no external dependency</li><li>Obsidian-compatible rendering</li><li>Structured claims with provenance, confidence, evidence metadata</li><li>Dashboard reports: contradictions, low-confidence, stale pages</li><li>Compiled digests for agent consumption (<code>agent-digest.json</code>, <code>claims.jsonl</code>)</li></ul></div>
+<div class="section"><h3>P2P Sync — Syncthing</h3><p>
+For internet blackout resilience, pair <code>memory-wiki</code> with Syncthing:</p><pre><code class="language-">Node A (Hetzner VPS)              Node B (HP EliteBook / laptop)
+~/.openclaw/wiki/main/    ←sync→   ~/.openclaw/wiki/main/
+</code></pre><ul><li>Zero internet dependency for wiki access</li><li>Automatic conflict resolution</li><li>Runs on same machine as OpenClaw</li></ul></div>
+<div class="section"><h3>Future Migration Path</h3><p>
+<table class="md-table"><thead><tr><th>Phase</th><th>Wiki Backend</th><th>Sync</th></tr></thead><tbody><tr><td><strong>Phase 1</strong></td><td>memory-wiki (Markdown vault)</td><td>Syncthing</td></tr><tr><td><strong>Phase 2</strong></td><td>SurrealDB (same graph schema, vector embeddings)</td><td>Syncthing + Radicle</td></tr><tr><td><strong>Phase 3</strong></td><td>SurrealDB + Hyperon/MeTTa reasoning layer</td><td>Mesh sync</td></tr></tbody></table><p>Structured claims with <code>sourceId</code>, <code>canonicalId</code>, <code>entityType</code> frontmatter are the bridge.
+These fields map directly to SurrealDB graph nodes.</p></div>
+<div class="section"><h2>References</h2><p>
+<ul><li>Bonfires.ai: bonfires.ai</li><li>llm_wiki: github.com/nashsu/llm_wiki (Karpathy LLM Wiki pattern)</li><li>OpenClaw memory-wiki: docs.openclaw.ai/plugins/memory-wiki</li><li>Syncthing: syncthing.net — serverless P2P file sync</li></ul></div>
+
+        </article>
+        <nav class="adr-nav"><a href="index.html">&#8592; All ADRs</a></nav>
+    </main>
+    <footer class="site-footer">
+        <div class="container">
+            <p>Generated 2026-05-07 09:23</p>
+        </div>
+    </footer>
+    <script>function toggleTheme(){const b=document.body;b.classList.toggle('dark');b.classList.toggle('light');localStorage.setItem('theme',b.classList.contains('dark')?'dark':'light')}document.addEventListener('DOMContentLoaded',()=>{const s=localStorage.getItem('theme');if(s){document.body.className=s}else if(window.matchMedia('(prefers-color-scheme: dark)').matches){document.body.className='dark'}else{document.body.className='light'}})</script>
+</body>
+</html>

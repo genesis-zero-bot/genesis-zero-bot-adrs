@@ -68,7 +68,8 @@ Before any source page is committed to the vault:
 
 | Option | Assessment |
 |--------|------------|
-| Trust LLM ingest quality | Rejected — errors compound in LLM Wiki.
+| Trust LLM ingest quality | Rejected — errors compound in LLM Wiki. |
+
 No quality gate means bad synthesis baked permanently. |
 | Manual review every ingest | Rejected — unsustainable at scale.
 Creates bottleneck. |
