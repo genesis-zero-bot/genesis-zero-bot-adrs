@@ -27,9 +27,8 @@ jobs:
           python-version: '3.12'
 
       - name: Build site
-        run: |
-          cd docs/adrs
-          python3 build.py
+        run: python3 "$GITHUB_WORKSPACE/docs/adrs/build.py"
+        working-directory: '$GITHUB_WORKSPACE'
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
