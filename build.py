@@ -78,15 +78,15 @@ def render(text):
         # Determine path: sources/ for .md-style source refs, concepts/ for concept refs
         if slug.startswith('sources/'):
             path = slug.replace('sources/', '')
-            url = f'../wiki/sources/{path}.html'
+            url = f'../wiki/sources/{path}/'
         elif slug.startswith('concepts/'):
             path = slug.replace('concepts/', '')
-            url = f'../wiki/concepts/{path}.html'
+            url = f'../wiki/concepts/{path}/'
         elif slug.startswith('adr-'):
             url = f'#{slug}'  # internal anchor, no prefix
         elif '/' not in slug:
             # bare slug — treat as sources/
-            url = f'../wiki/sources/{slug}.html'
+            url = f'../wiki/sources/{slug}/'
         else:
             url = f'../wiki/{slug}.html'
         return f'<a href="{url}">{label}</a>'
