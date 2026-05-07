@@ -214,7 +214,7 @@ def make_base_html(title, heading_html, subtitle, main_content, footer_note):
         f'<title>{html_escape(title)}</title>\n'
         '<link rel="stylesheet" href="assets/style.css">\n'
         '<link rel="stylesheet" href="assets/adr.css">\n'
-        '<style>html,body{--bg:#ffffff}body.dark,body:not(.light){--bg:#0d1117}</style>\n'
+        '<style>:root{--bg:#ffffff}</style>\n'
         '</head>\n'
         '<body class="dark">\n'
         '<header class="site-header">\n'
