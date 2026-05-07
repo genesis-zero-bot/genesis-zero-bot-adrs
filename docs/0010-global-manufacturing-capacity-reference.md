@@ -4,7 +4,7 @@ pageType: adr
 title: "ADR 0010 — Global Manufacturing Capacity as Regenerative Community Strategic Reference"
 status: accepted
 date: "2026-05-07"
-authors: Vitali Vorski via Genesis
+authors: Genesis
 domain: engineering
 level: system
 confidence: 0.9
