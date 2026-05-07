@@ -1,49 +1,49 @@
 /* Base styles — light mode default */
 
 :root {
-  --bg: #ffffff;
-  --bg-secondary: #f8f9fa;
-  --bg-tertiary: #e9ecef;
-  --text: #212529;
-  --text-secondary: #6c757d;
-  --heading: #1a1a2e;
-  --accent: #2d6a4f;
-  --accent-hover: #1b4332;
-  --border: #dee2e6;
-  --border-dark: #ced4da;
-  --link: #2d6a4f;
-  --code-bg: #f4f4f4;
-  --code-text: #c7254e;
-  --pre-bg: #1e1e1e;
-  --pre-text: #e6edf3;
-  --table-header-bg: #f8f9fa;
-  --table-border: #dee2e6;
-  --table-row-hover: #f0f7ff;
-  --shadow: rgba(0,0,0,0.08);
+  --bg: #faf9f7;
+  --bg-secondary: #f0ede8;
+  --bg-tertiary: #e8e2db;
+  --text: #2c2416;
+  --text-secondary: #6b5d4d;
+  --heading: #1a100a;
+  --accent: #c45d2e;
+  --accent-hover: #9a3f1a;
+  --border: #d4ccc0;
+  --border-dark: #b8ae9e;
+  --link: #c45d2e;
+  --code-bg: #f0ede8;
+  --code-text: #b84a1c;
+  --pre-bg: #2c2416;
+  --pre-text: #f0ede8;
+  --table-header-bg: #e8e2db;
+  --table-border: #d4ccc0;
+  --table-row-hover: #f0ede8;
+  --shadow: rgba(44,36,22,0.10);
 }
 
 /* Dark mode */
 body.dark,
 body:not(.light) {
-  --bg: #0d1117;
-  --bg-secondary: #161b22;
-  --bg-tertiary: #21262d;
-  --text: #e6edf3;
-  --text-secondary: #8b949e;
-  --heading: #f0f6fc;
-  --accent: #52b788;
-  --accent-hover: #74c69d;
-  --border: #30363d;
-  --border-dark: #21262d;
-  --link: #52b788;
-  --code-bg: #1e1e1e;
-  --code-text: #f97583;
-  --pre-bg: #0d1117;
-  --pre-text: #e6edf3;
-  --table-header-bg: #161b22;
-  --table-border: #30363d;
-  --table-row-hover: #161b22;
-  --shadow: rgba(0,0,0,0.4);
+  --bg: #1c1812;
+  --bg-secondary: #252018;
+  --bg-tertiary: #2e2820;
+  --text: #e8e0d4;
+  --text-secondary: #a89880;
+  --heading: #f0e8dc;
+  --accent: #e07840;
+  --accent-hover: #f09060;
+  --border: #3d3528;
+  --border-dark: #2e2820;
+  --link: #e07840;
+  --code-bg: #2e2820;
+  --code-text: #f09060;
+  --pre-bg: #0f0c08;
+  --pre-text: #e8e0d4;
+  --table-header-bg: #252018;
+  --table-border: #3d3528;
+  --table-row-hover: #2e2820;
+  --shadow: rgba(0,0,0,0.5);
 }
 
 /* Reset */
@@ -173,14 +173,13 @@ blockquote {
   background: var(--bg-secondary);
   color: var(--text);
   border-radius: 0 4px 4px 0;
-  opacity: 0.9;
 }
 
 /* ── Lists ── */
 ul, ol { padding-left: 1.5rem; margin: 0.6rem 0; }
 li { margin-bottom: 0.3rem; }
 
-/* ── Tables — consistent, no jarring alternating colors ── */
+/* ── Tables — uniform, no alternating rows ── */
 table {
   border-collapse: collapse;
   width: 100%;
@@ -259,7 +258,7 @@ tr:hover td { background: var(--table-row-hover); }
   letter-spacing: 0.04em;
 }
 .status.accepted { background: var(--accent); color: #fff; }
-.status.proposed { background: #b8860b; color: #fff; }
+.status.proposed { background: var(--text-secondary); color: var(--bg); }
 .status.deprecated { background: #8b3a3a; color: #fff; }
 .status.superseded { background: var(--bg-tertiary); color: var(--text-secondary); border: 1px solid var(--border); }
 .status.rejected { background: #8b3a3a; color: #fff; }
