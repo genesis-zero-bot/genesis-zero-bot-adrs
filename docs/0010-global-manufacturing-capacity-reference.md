@@ -79,4 +79,4 @@ The Global Manufacturing Capacity Report is designated a living reference. When:
 
 - [[sources/0010-global-manufacturing-capacity-report|Source — Global Manufacturing Capacity Report]]
 - [[concepts/0010-global-manufacturing-capacity-report|Concept — Global Manufacturing Capacity Report]]
-- [ADR 0010 — Previous version (6-section, superseded)](adr-0010.html)
+- [ADR 0011 — Superseding version (30-chapter, canonical)](adr-0011.html)
