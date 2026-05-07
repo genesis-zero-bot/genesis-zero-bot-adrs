@@ -186,6 +186,7 @@ td {
   border: 1px solid var(--table-border);
   vertical-align: top;
   color: var(--text);
+  background: var(--table-header-bg);
 }
 
 /* ── ADR specific ── */
