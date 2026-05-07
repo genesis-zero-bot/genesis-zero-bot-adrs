@@ -4,7 +4,6 @@ Build HTML site from MADR ADR files.
 Reads ADR markdown files from docs/, generates navigable HTML, outputs to _site/.
 """
 
-import os
 import re
 import json
 from pathlib import Path
@@ -13,6 +12,7 @@ from datetime import datetime
 DOCS_DIR = Path(__file__).parent / "docs"
 SITE_DIR = Path(__file__).parent / "_site"
 ASSETS_DIR = Path(__file__).parent / "assets"
+
 
 def parse_frontmatter(content):
     """Parse YAML frontmatter from markdown."""
@@ -26,6 +26,7 @@ def parse_frontmatter(content):
             fm[key.strip()] = val.strip().strip('"').strip("'")
     body = content[len(match.group(0)):].strip()
     return fm, body
+
 
 def extract_sections(body):
     """Split body into sections by ## headings."""
@@ -43,97 +44,175 @@ def extract_sections(body):
         sections.append(current)
     return sections
 
+
 def render_markdown(text):
-    """Very simple markdown renderer."""
+    """GFM-compatible markdown renderer."""
     html = text
-    # code blocks
-    html = re.sub(r'```(\w*)\n(.*?)```', r'<pre><code class="\1">\2</code></pre>', html, flags=re.DOTALL)
-    # inline code
+
+    # --- BLOCK LEVEL (process first) ---
+
+    # Fenced code blocks
+    html = re.sub(
+        r'```(\w*)\n(.*?)```',
+        r'<pre><code class="language-\1">\2</code></pre>',
+        html, flags=re.DOTALL
+    )
+
+    # GFM tables — collect contiguous | lines
+    def render_table(rows):
+        """rows = list of markdown table rows (header + body, no separator)."""
+        if not rows:
+            return ''
+        headers = [h.strip() for h in rows[0].strip('|').split('|')]
+        body_rows = []
+        for row in rows[1:]:
+            cells = [c.strip() for c in row.strip('|').split('|')]
+            body_rows.append(cells)
+        th = ''.join(f'<th>{h}</th>' for h in headers)
+        tbody = ''.join(
+            '<tr>' + ''.join(f'<td>{c}</td>' for c in row) + '</tr>'
+            for row in body_rows
+        )
+        return (
+            f'<table class="md-table">'
+            f'<thead><tr>{th}</tr></thead>'
+            f'<tbody>{tbody}</tbody>'
+            f'</table>'
+        )
+
+    lines = html.split('\n')
+    out, i = [], 0
+    while i < len(lines):
+        stripped = lines[i].strip()
+        if stripped.startswith('|') and '|' in stripped:
+            table_rows = []
+            while i < len(lines) and lines[i].strip().startswith('|'):
+                table_rows.append(lines[i])
+                i += 1
+            # Filter out separator lines: |---|---|
+            data_rows = [
+                r for r in table_rows
+                if not re.match(r'^\|[\s\-:]+(\|[\s\-:]+)+\|?$', r)
+            ]
+            out.append(render_table(data_rows))
+        else:
+            out.append(lines[i])
+            i += 1
+    html = '\n'.join(out)
+
+    # Horizontal rule
+    html = re.sub(r'^---+$', '<hr>', html, flags=re.MULTILINE)
+
+    # --- INLINE LEVEL ---
+
+    # Inline code
     html = re.sub(r'`([^`]+)`', r'<code>\1</code>', html)
-    # bold
+    # Bold
     html = re.sub(r'\*\*([^*]+)\*\*', r'<strong>\1</strong>', html)
-    # italic
+    # Italic
     html = re.sub(r'\*([^*]+)\*', r'<em>\1</em>', html)
-    # headers
+    # Headers
+    html = re.sub(r'^##### (.*)', r'<h5>\1</h5>', html, flags=re.MULTILINE)
     html = re.sub(r'^#### (.*)', r'<h4>\1</h4>', html, flags=re.MULTILINE)
     html = re.sub(r'^### (.*)', r'<h3>\1</h3>', html, flags=re.MULTILINE)
     html = re.sub(r'^## (.*)', r'<h2>\1</h2>', html, flags=re.MULTILINE)
-    # hr
-    html = re.sub(r'^---$', '<hr>', html, flags=re.MULTILINE)
-    # tables
-    html = re.sub(r'\|([^|\n]+)\|\s*\|([\^v])\s*\|', r'<span class="status-arrow">\2</span>', html)
-    # blockquotes
-    html = re.sub(r'^> (.+)', r'<blockquote>\1</blockquote>', html, flags=re.MULTILINE)
-    # links
+    html = re.sub(r'^# (.*)', r'<h1>\1</h1>', html, flags=re.MULTILINE)
+    # Links
     html = re.sub(r'\[([^\]]+)\]\(([^)]+)\)', r'<a href="\2">\1</a>', html)
-    # lists
+
+    # Lists
     lines = html.split('\n')
-    result = []
-    in_list = False
-    for line in lines:
-        if re.match(r'^[-*] ', line):
-            if not in_list:
-                result.append('<ul>')
-                in_list = True
-            result.append('<li>' + re.sub(r'^[-*] ', '', line) + '</li>')
+    out, i = [], 0
+    while i < len(lines):
+        m = re.match(r'^(\s*)([-*]) (.+)', lines[i])
+        if m:
+            indent, first = m.group(1), m.group(3)
+            items = [first]
+            j = i + 1
+            while j < len(lines):
+                nm = re.match(r'^(\s*)([-*]) (.+)', lines[j])
+                if not nm or nm.group(1) != indent:
+                    break
+                items.append(nm.group(3))
+                j += 1
+            out.append(
+                indent + '<ul>' + ''.join(f'<li>{it}</li>' for it in items) + '</ul>'
+            )
+            i = j
         else:
-            if in_list:
-                result.append('</ul>')
-                in_list = False
-            result.append(line)
-    html = '\n'.join(result)
-    if in_list:
-        html += '</ul>'
-    # wrap paragraphs
-    html = re.sub(r'\n\n+', '</p><p>', html)
+            out.append(lines[i])
+            i += 1
+    html = '\n'.join(out)
+
+    # Paragraphs
+    html = re.sub(r'\n{2,}', '</p><p>', html)
     html = '<p>' + html + '</p>'
+
+    # Strip <p> around block elements
+    for tag in ['h1', 'h2', 'h3', 'h4', 'h5', 'pre', 'ul', 'ol',
+                'blockquote', 'hr', 'table', 'div']:
+        html = re.sub(rf'<p>(<{tag}[^>]*>)', r'\1', html)
+        html = re.sub(rf'(</?{tag}[^>]*>)\s*</p>', r'\1', html)
     html = re.sub(r'<p>\s*</p>', '', html)
-    html = re.sub(r'<p>(<h[1-6]>)', r'\1', html)
-    html = re.sub(r'(</h[1-6]>)\s*</p>', r'\1', html)
-    html = re.sub(r'<p>(<pre>)', r'\1', html)
-    html = re.sub(r'(</pre>)\s*</p>', r'\1', html)
-    html = re.sub(r'<p>(<ul>)', r'\1', html)
-    html = re.sub(r'(</ul>)\s*</p>', r'\1', html)
-    html = re.sub(r'<p>(<blockquote>)', r'\1', html)
-    html = re.sub(r'(</blockquote>)\s*</p>', r'\1', html)
+
     return html
 
+
 def build_index(adrs):
-    """Build index page with all ADRs."""
     rows = []
     for adr in sorted(adrs, key=lambda x: x['number']):
         num = str(adr['number']).zfill(4)
-        status_class = adr['status'].lower()
-        rows.append(f"""<tr class="adr-row">
-            <td class="adr-num"><a href="adr-{num}.html">{num}</a></td>
-            <td class="adr-title"><a href="adr-{num}.html">{adr.get('title', 'Untitled')}</a></td>
-            <td class="adr-status"><span class="status {status_class}">{adr['status']}</span></td>
-            <td class="adr-date">{adr.get('date', '')}</td>
-            <td class="adr-domain">{adr.get('domain', '')}</td>
-        </tr>""")
+        cls = adr.get('status', '').lower().replace(' ', '-')
+        rows.append(
+            f'<tr class="adr-row">'
+            f'<td class="adr-num"><a href="adr-{num}.html">{num}</a></td>'
+            f'<td class="adr-title"><a href="adr-{num}.html">'
+            f"{adr.get('title', 'Untitled')}</a></td>"
+            f'<td class="adr-status"><span class="status {cls}">'
+            f"{adr.get('status', '')}</span></td>"
+            f'<td class="adr-date">{adr.get('date', '')}</td>'
+            f'<td class="adr-domain">{adr.get('domain', '')}</td>'
+            f'</tr>'
+        )
     return '\n'.join(rows)
 
+
 def build_page(adr, sections):
-    """Build single ADR page."""
     num = str(adr['number']).zfill(4)
     tags_html = ''
     if adr.get('tags'):
-        tags_html = '<div class="adr-tags">'
-        for tag in adr.get('tags', []):
-            tags_html += f'<span class="tag">{tag}</span>'
-        tags_html += '</div>'
-    
+        tags_html = '<div class="adr-tags">' + ''.join(
+            f'<span class="tag">{t}</span>' for t in adr.get('tags', [])
+        ) + '</div>'
+
     sections_html = ''
     for sec in sections:
         lvl = sec['level']
-        title = sec['title']
         content = render_markdown(sec['content'])
-        sections_html += f'<div class="section"><h{lvl}>{title}</h{lvl}>{content}</div>\n'
-    
-    nav = f"""<nav class="adr-nav">
-        <a href="index.html">← All ADRs</a>
-    </nav>"""
-    
+        sections_html += (
+            f'<div class="section">'
+            f'<h{lvl}>{sec["title"]}</h{lvl}>'
+            f'{content}</div>\n'
+        )
+
+    nav = (
+        '<nav class="adr-nav">'
+        '<a href="index.html">&#8592; All ADRs</a>'
+        '</nav>'
+    )
+
+    meta_items = []
+    for key, label in [('status', 'Status'), ('date', 'Date'),
+                       ('domain', 'Domain'), ('level', 'Level'),
+                       ('authors', 'Authors')]:
+        if adr.get(key):
+            meta_items.append(
+                f'<span class="meta-{key}"><strong>{label}:</strong> '
+                f'{adr[key]}</span>'
+            )
+
+    status_cls = adr.get('status', '').lower().replace(' ', '-')
+
     return f"""<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -147,19 +226,17 @@ def build_page(adr, sections):
     <header class="site-header">
         <div class="container">
             <h1><a href="index.html">RegenTribes ADRs</a></h1>
-            <p>Architecture Decision Records — MADR format, ASD-STE100</p>
+            <p>Architecture Decision Records &mdash; MADR format, ASD-STE100</p>
         </div>
     </header>
     <main class="container">
         {nav}
         <article class="adr-article">
             <header class="adr-header">
-                <h1>ADR {num}: {adr.get('title', 'Untitled')}</h1>
+                <h1 class="adr-title-heading">ADR {num}: {adr.get('title', 'Untitled')}</h1>
                 <div class="adr-meta">
-                    <span class="status {adr.get('status', '').lower()}">{adr.get('status', '')}</span>
-                    <span class="meta-date">{adr.get('date', '')}</span>
-                    <span class="meta-domain">{adr.get('domain', '')}</span>
-                    <span class="meta-level">level: {adr.get('level', '')}</span>
+                    <span class="status {status_cls}">{adr.get('status', '')}</span>
+                    {' '.join(meta_items)}
                 </div>
                 {tags_html}
             </header>
@@ -169,37 +246,16 @@ def build_page(adr, sections):
     </main>
     <footer class="site-footer">
         <div class="container">
-            <p>Generated {datetime.now().strftime('%Y-%m-%d')}</p>
+            <p>Generated {datetime.now().strftime('%Y-%m-%d %H:%M')}</p>
         </div>
     </footer>
 </body>
 </html>"""
 
-def main():
-    SITE_DIR.mkdir(exist_ok=True)
-    
-    adrs = []
-    doc_files = sorted(DOCS_DIR.glob("????-*.md"))
-    
-    for fpath in doc_files:
-        content = fpath.read_text()
-        fm, body = parse_frontmatter(content)
-        
-        if 'number' in fm:
-            fm['number'] = int(fm['number'])
-        else:
-            m = re.match(r'^(\d+)', fpath.stem)
-            fm['number'] = int(m.group(1)) if m else 0
-        
-        sections = extract_sections(body)
-        adrs.append(fm)
-        
-        html = build_page(fm, sections)
-        num = str(fm['number']).zfill(4)
-        (SITE_DIR / f"adr-{num}.html").write_text(html)
-    
-    # Build index
-    index_html = f"""<!DOCTYPE html>
+
+def build_index_page(adrs):
+    rows = build_index(adrs)
+    return f"""<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -212,7 +268,7 @@ def main():
     <header class="site-header">
         <div class="container">
             <h1>RegenTribes ADRs</h1>
-            <p>Architecture Decision Records — MADR format, ASD-STE100</p>
+            <p>Architecture Decision Records &mdash; MADR format, ASD-STE100</p>
         </div>
     </header>
     <main class="container">
@@ -228,31 +284,52 @@ def main():
                     </tr>
                 </thead>
                 <tbody>
-                    {build_index(adrs)}
+                    {rows}
                 </tbody>
             </table>
         </section>
     </main>
     <footer class="site-footer">
         <div class="container">
-            <p>{len(adrs)} Architecture Decision Records — Generated {datetime.now().strftime('%Y-%m-%d')}</p>
+            <p>{len(adrs)} Architecture Decision Records &mdash; Generated {datetime.now().strftime('%Y-%m-%d %H:%M')}</p>
         </div>
     </footer>
 </body>
 </html>"""
-    
-    (SITE_DIR / "index.html").write_text(index_html)
-    
-    # Copy assets
+
+
+def main():
+    SITE_DIR.mkdir(exist_ok=True)
+    adrs = []
+
+    for fpath in sorted(DOCS_DIR.glob("????-*.md")):
+        content = fpath.read_text()
+        fm, body = parse_frontmatter(content)
+
+        m = re.match(r'^(\d+)', fpath.stem)
+        fm['number'] = int(m.group(1)) if m else 0
+
+        sections = extract_sections(body)
+        adrs.append(fm)
+
+        html = build_page(fm, sections)
+        num = str(fm['number']).zfill(4)
+        (SITE_DIR / f"adr-{num}.html").write_text(html)
+
+    # Index page
+    (SITE_DIR / "index.html").write_text(build_index_page(adrs))
+
+    # Assets
     for asset in ASSETS_DIR.glob("*"):
         if asset.is_file():
             (SITE_DIR / asset.name).write_bytes(asset.read_bytes())
-    
-    # Build manifest
+
+    # Manifest
     manifest = {
         'generated': datetime.now().isoformat(),
         'count': len(adrs),
-        'adrs': [
+        'format': 'MADR 3.0',
+        'adrs': sorted([
             {
                 'number': a['number'],
                 'title': a.get('title', ''),
@@ -261,14 +338,15 @@ def main():
                 'domain': a.get('domain', ''),
                 'level': a.get('level', ''),
                 'authors': a.get('authors', '').split(',') if a.get('authors') else [],
-                'tags': a.get('tags', [])
+                'tags': a.get('tags', []),
             }
-            for a in sorted(adrs, key=lambda x: x['number'])
-        ]
+            for a in adrs
+        ], key=lambda x: x['number'])
     }
     (SITE_DIR / "manifest.json").write_text(json.dumps(manifest, indent=2))
-    
+
     print(f"Built {len(adrs)} ADRs -> {SITE_DIR}")
+
 
 if __name__ == "__main__":
     main()

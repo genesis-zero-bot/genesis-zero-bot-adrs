@@ -26,6 +26,12 @@ jobs:
         with:
           python-version: '3.12'
 
+      - name: List workspace
+        run: |
+          pwd
+          ls -la
+          ls -la docs/
+
       - name: Build site
         run: python3 build.py
 
