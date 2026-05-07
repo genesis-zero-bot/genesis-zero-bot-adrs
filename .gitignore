@@ -1,8 +1,9 @@
+# Generated site output (only when using _site/ subdirectory)
 _site/
+
+# Python
 __pycache__/
 *.pyc
-.openclaw-wiki/
-.env
-*.egg-info/
-.venv/
-venv/
+
+# Backup artifacts
+_backup/

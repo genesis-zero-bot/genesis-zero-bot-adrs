@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 """
 Build HTML site from MADR ADR files.
-Reads ADR markdown files from docs/, generates navigable HTML, outputs to _site/.
+Reads ADR markdown files from docs/, outputs to _site/ (compatible with GitHub Actions).
+Assets copied to _site/assets/.
+Dark/light theme via localStorage, defaults to dark.
 """
 
-import re
-import json
+import re, json
 from pathlib import Path
 from datetime import datetime
 
@@ -13,111 +14,107 @@ DOCS_DIR = Path(__file__).parent / "docs"
 SITE_DIR = Path(__file__).parent / "_site"
 ASSETS_DIR = Path(__file__).parent / "assets"
 
+THEME_TOGGLE = (
+    '<button id="theme-toggle" aria-label="Toggle theme" '
+    'onclick="toggleTheme()">&#9790;</button>'
+)
+THEME_SCRIPT = (
+    '<script>'
+    'function toggleTheme(){var b=document.body;b.classList.toggle("dark");'
+    'b.classList.toggle("light");localStorage.setItem("theme",'
+    'b.classList.contains("dark")?"dark":"light");}'
+    'document.addEventListener("DOMContentLoaded",function(){'
+    'var s=localStorage.getItem("theme");'
+    'if(s){document.body.className=s}'
+    'else if(window.matchMedia("(prefers-color-scheme:dark)").matches)'
+    '{document.body.className="dark"}'
+    'else{document.body.className="light"}});'
+    '</script>'
+)
+
 
 def parse_frontmatter(content):
-    """Parse YAML frontmatter from markdown."""
     match = re.match(r'^---\n(.*?)\n---', content, re.DOTALL)
     if not match:
         return {}, content
     fm = {}
     for line in match.group(1).split('\n'):
         if ':' in line:
-            key, val = line.split(':', 1)
-            fm[key.strip()] = val.strip().strip('"').strip("'")
-    body = content[len(match.group(0)):].strip()
-    return fm, body
+            k, v = line.split(':', 1)
+            fm[k.strip()] = v.strip().strip('"').strip("'")
+    return fm, content[len(match.group(0)):].strip()
 
 
 def extract_sections(body):
-    """Split body into sections by ## headings."""
-    sections = []
-    current = {'title': 'Context', 'level': 2, 'content': ''}
+    sections, cur = [], {'title': 'Context', 'level': 2, 'content': ''}
     for line in body.split('\n'):
         m = re.match(r'^(#{1,6})\s+(.*)', line)
         if m:
-            if current['content'].strip():
-                sections.append(current)
-            current = {'level': len(m.group(1)), 'title': m.group(2).strip(), 'content': ''}
+            if cur['content'].strip():
+                sections.append(cur)
+            cur = {'level': len(m.group(1)), 'title': m.group(2).strip(), 'content': ''}
         else:
-            current['content'] += line + '\n'
-    if current['content'].strip():
-        sections.append(current)
+            cur['content'] += line + '\n'
+    if cur['content'].strip():
+        sections.append(cur)
     return sections
 
 
-def render_markdown(text):
-    """GFM-compatible markdown renderer."""
+def render(text):
     html = text
 
-    # --- BLOCK LEVEL (process first) ---
-
     # Fenced code blocks
-    html = re.sub(
-        r'```(\w*)\n(.*?)```',
-        r'<pre><code class="language-\1">\2</code></pre>',
-        html, flags=re.DOTALL
-    )
+    html = re.sub(r'```(\w*)\n(.*?)```',
+        '<pre><code class="language-\\1">\\2</code></pre>',
+        html, flags=re.DOTALL)
 
-    # GFM tables — collect contiguous | lines
-    def render_table(rows):
-        """rows = list of markdown table rows (header + body, no separator)."""
-        if not rows:
-            return ''
-        headers = [h.strip() for h in rows[0].strip('|').split('|')]
-        body_rows = []
-        for row in rows[1:]:
-            cells = [c.strip() for c in row.strip('|').split('|')]
-            body_rows.append(cells)
-        th = ''.join(f'<th>{h}</th>' for h in headers)
-        tbody = ''.join(
-            '<tr>' + ''.join(f'<td>{c}</td>' for c in row) + '</tr>'
-            for row in body_rows
-        )
-        return (
-            f'<table class="md-table">'
-            f'<thead><tr>{th}</tr></thead>'
-            f'<tbody>{tbody}</tbody>'
-            f'</table>'
-        )
-
+    # Tables
     lines = html.split('\n')
     out, i = [], 0
     while i < len(lines):
         stripped = lines[i].strip()
         if stripped.startswith('|') and '|' in stripped:
-            table_rows = []
+            table_lines = []
             while i < len(lines) and lines[i].strip().startswith('|'):
-                table_rows.append(lines[i])
+                table_lines.append(lines[i])
                 i += 1
-            # Filter out separator lines: |---|---|
+            # Filter separator rows
             data_rows = [
-                r for r in table_rows
+                r for r in table_lines
                 if not re.match(r'^\|[\s\-:]+(\|[\s\-:]+)+\|?$', r)
             ]
-            out.append(render_table(data_rows))
+            if data_rows:
+                headers = [h.strip() for h in data_rows[0].strip('|').split('|')]
+                body_rows = [
+                    [c.strip() for c in r.strip('|').split('|')]
+                    for r in data_rows[1:]
+                ]
+                th = ''.join(f'<th>{h}</th>' for h in headers)
+                tbody = ''.join(
+                    '<tr>' + ''.join(f'<td>{c}</td>' for c in row) + '</tr>'
+                    for row in body_rows
+                )
+                out.append(
+                    f'<table class="md-table">'
+                    f'<thead><tr>{th}</tr></thead>'
+                    f'<tbody>{tbody}</tbody></table>'
+                )
         else:
             out.append(lines[i])
             i += 1
     html = '\n'.join(out)
 
-    # Horizontal rule
+    # HR
     html = re.sub(r'^---+$', '<hr>', html, flags=re.MULTILINE)
 
-    # --- INLINE LEVEL ---
-
-    # Inline code
+    # Inline
     html = re.sub(r'`([^`]+)`', r'<code>\1</code>', html)
-    # Bold
     html = re.sub(r'\*\*([^*]+)\*\*', r'<strong>\1</strong>', html)
-    # Italic
     html = re.sub(r'\*([^*]+)\*', r'<em>\1</em>', html)
-    # Headers
-    html = re.sub(r'^##### (.*)', r'<h5>\1</h5>', html, flags=re.MULTILINE)
-    html = re.sub(r'^#### (.*)', r'<h4>\1</h4>', html, flags=re.MULTILINE)
-    html = re.sub(r'^### (.*)', r'<h3>\1</h3>', html, flags=re.MULTILINE)
-    html = re.sub(r'^## (.*)', r'<h2>\1</h2>', html, flags=re.MULTILINE)
-    html = re.sub(r'^# (.*)', r'<h1>\1</h1>', html, flags=re.MULTILINE)
-    # Links
+    for lvl in [1, 2, 3, 4, 5]:
+        html = re.sub(r'^' + '#' * lvl + r' (.*)',
+                      f'<h{lvl}>\\1</h{lvl}>',
+                      html, flags=re.MULTILINE)
     html = re.sub(r'\[([^\]]+)\]\(([^)]+)\)', r'<a href="\2">\1</a>', html)
 
     # Lists
@@ -135,167 +132,156 @@ def render_markdown(text):
                     break
                 items.append(nm.group(3))
                 j += 1
-            out.append(
-                indent + '<ul>' + ''.join(f'<li>{it}</li>' for it in items) + '</ul>'
-            )
+            out.append(indent + '<ul>' + ''.join(f'<li>{it}</li>' for it in items) + '</ul>')
             i = j
         else:
-            out.append(lines[i])
-            i += 1
+            out.append(lines[i]); i += 1
     html = '\n'.join(out)
 
     # Paragraphs
     html = re.sub(r'\n{2,}', '</p><p>', html)
     html = '<p>' + html + '</p>'
-
-    # Strip <p> around block elements
-    for tag in ['h1', 'h2', 'h3', 'h4', 'h5', 'pre', 'ul', 'ol',
-                'blockquote', 'hr', 'table', 'div']:
+    for tag in ['h1','h2','h3','h4','h5','pre','ul','ol','blockquote','hr','table','div']:
         html = re.sub(rf'<p>(<{tag}[^>]*>)', r'\1', html)
         html = re.sub(rf'(</?{tag}[^>]*>)\s*</p>', r'\1', html)
     html = re.sub(r'<p>\s*</p>', '', html)
-
     return html
 
 
-def build_index(adrs):
+def html_escape(s):
+    return (s.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
+            .replace('"', '&quot;'))
+
+
+def make_base_html(title, heading_html, subtitle, main_content, footer_note):
+    return (
+        '<!DOCTYPE html>\n'
+        '<html lang="en">\n'
+        '<head>\n'
+        '<meta charset="UTF-8">\n'
+        '<meta name="viewport" content="width=device-width,initial-scale=1.0">\n'
+        f'<title>{html_escape(title)}</title>\n'
+        '<link rel="stylesheet" href="assets/style.css">\n'
+        '<link rel="stylesheet" href="assets/adr.css">\n'
+        '<style>body{--t:0}@media(prefers-color-scheme:dark){body{--t:1;--bg:#0d1117}}</style>\n'
+        '</head>\n'
+        '<body class="dark">\n'
+        '<header class="site-header">\n'
+        '<div class="container">\n'
+        '<div class="header-row">\n'
+        f'{heading_html}\n'
+        f'{THEME_TOGGLE}\n'
+        '</div>\n'
+        f'<p>{subtitle}</p>\n'
+        '</div>\n'
+        '</header>\n'
+        '<main class="container">\n'
+        f'{main_content}\n'
+        '</main>\n'
+        '<footer class="site-footer">\n'
+        '<div class="container">\n'
+        f'<p>{footer_note}</p>\n'
+        '</div>\n'
+        '</footer>\n'
+        f'{THEME_SCRIPT}\n'
+        '</body>\n'
+        '</html>'
+    )
+
+
+def build_index_page(adrs):
     rows = []
-    for adr in sorted(adrs, key=lambda x: x['number']):
-        num = str(adr['number']).zfill(4)
-        cls = adr.get('status', '').lower().replace(' ', '-')
+    for a in sorted(adrs, key=lambda x: x['number']):
+        num = str(a['number']).zfill(4)
+        cls = a.get('status', '').lower().replace(' ', '-')
         rows.append(
-            f'<tr class="adr-row">'
-            f'<td class="adr-num"><a href="adr-{num}.html">{num}</a></td>'
-            f'<td class="adr-title"><a href="adr-{num}.html">'
-            f"{adr.get('title', 'Untitled')}</a></td>"
-            f'<td class="adr-status"><span class="status {cls}">'
-            f"{adr.get('status', '')}</span></td>"
-            f'<td class="adr-date">{adr.get('date', '')}</td>'
-            f'<td class="adr-domain">{adr.get('domain', '')}</td>'
+            f'<tr>'
+            f'<td><a href="adr-{num}.html">{num}</a></td>'
+            f'<td><a href="adr-{num}.html">{html_escape(a.get("title",""))}</a></td>'
+            f'<td><span class="status {cls}">{html_escape(a.get("status",""))}</span></td>'
+            f'<td>{html_escape(a.get("date",""))}</td>'
+            f'<td>{html_escape(a.get("domain",""))}</td>'
             f'</tr>'
         )
-    return '\n'.join(rows)
+    rows_html = '\n'.join(rows)
+    count = len(adrs)
+    main = (
+        '<section class="adr-table-section">\n'
+        '<table class="adr-table">\n'
+        '<thead><tr>'
+        '<th>ADR</th><th>Title</th><th>Status</th><th>Date</th><th>Domain</th>'
+        '</tr></thead>\n'
+        f'<tbody>\n{rows_html}\n</tbody>\n'
+        '</table>\n'
+        '</section>'
+    )
+    footer = f'{count} ADRs &mdash; Generated {datetime.now().strftime("%Y-%m-%d %H:%M")}'
+    heading = '<h1>RegenTribes ADRs</h1>'
+    return make_base_html(
+        'RegenTribes ADR Repository',
+        heading,
+        'Architecture Decision Records \u2014 MADR format, ASD-STE100',
+        main,
+        footer
+    )
 
 
-def build_page(adr, sections):
+def build_adr_page(adr, sections):
     num = str(adr['number']).zfill(4)
+    title = adr.get('title', 'Untitled')
+
     tags_html = ''
     if adr.get('tags'):
         tags_html = '<div class="adr-tags">' + ''.join(
-            f'<span class="tag">{t}</span>' for t in adr.get('tags', [])
+            f'<span class="tag">{html_escape(t)}</span>'
+            for t in adr.get('tags', [])
         ) + '</div>'
 
     sections_html = ''
     for sec in sections:
         lvl = sec['level']
-        content = render_markdown(sec['content'])
+        content = render(sec['content'])
         sections_html += (
-            f'<div class="section">'
-            f'<h{lvl}>{sec["title"]}</h{lvl}>'
-            f'{content}</div>\n'
+            f'<div class="section">\n'
+            f'<h{lvl}>{html_escape(sec["title"])}</h{lvl}>\n'
+            f'{content}\n'
+            f'</div>\n'
         )
 
-    nav = (
-        '<nav class="adr-nav">'
-        '<a href="index.html">&#8592; All ADRs</a>'
-        '</nav>'
-    )
-
     meta_items = []
-    for key, label in [('status', 'Status'), ('date', 'Date'),
-                       ('domain', 'Domain'), ('level', 'Level'),
-                       ('authors', 'Authors')]:
+    for key, label in [('status','Status'),('date','Date'),
+                       ('domain','Domain'),('level','Level'),('authors','Authors')]:
         if adr.get(key):
             meta_items.append(
-                f'<span class="meta-{key}"><strong>{label}:</strong> '
-                f'{adr[key]}</span>'
+                f'<span><strong>{label}:</strong> {html_escape(str(adr[key]))}</span>'
             )
+    meta_html = ' '.join(meta_items)
 
-    status_cls = adr.get('status', '').lower().replace(' ', '-')
+    status_cls = adr.get('status','').lower().replace(' ','-')
+    status_html = f'<span class="status {status_cls}">{html_escape(adr.get("status",""))}</span>'
 
-    return f"""<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ADR {num}: {adr.get('title', 'Untitled')}</title>
-    <link rel="stylesheet" href="assets/adr.css">
-    <link rel="stylesheet" href="assets/style.css">
-</head>
-<body>
-    <header class="site-header">
-        <div class="container">
-            <h1><a href="index.html">RegenTribes ADRs</a></h1>
-            <p>Architecture Decision Records &mdash; MADR format, ASD-STE100</p>
-        </div>
-    </header>
-    <main class="container">
-        {nav}
-        <article class="adr-article">
-            <header class="adr-header">
-                <h1 class="adr-title-heading">ADR {num}: {adr.get('title', 'Untitled')}</h1>
-                <div class="adr-meta">
-                    <span class="status {status_cls}">{adr.get('status', '')}</span>
-                    {' '.join(meta_items)}
-                </div>
-                {tags_html}
-            </header>
-            {sections_html}
-        </article>
-        {nav}
-    </main>
-    <footer class="site-footer">
-        <div class="container">
-            <p>Generated {datetime.now().strftime('%Y-%m-%d %H:%M')}</p>
-        </div>
-    </footer>
-</body>
-</html>"""
+    main = (
+        '<nav class="adr-nav"><a href="index.html">\u2190 All ADRs</a></nav>\n'
+        '<article class="adr-article">\n'
+        '<header class="adr-header">\n'
+        f'<h1 class="adr-title-heading">ADR {num}: {html_escape(title)}</h1>\n'
+        f'<div class="adr-meta">{status_html} {meta_html}</div>\n'
+        f'{tags_html}\n'
+        '</header>\n'
+        f'{sections_html}\n'
+        '</article>\n'
+        '<nav class="adr-nav"><a href="index.html">\u2190 All ADRs</a></nav>'
+    )
 
-
-def build_index_page(adrs):
-    rows = build_index(adrs)
-    return f"""<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RegenTribes ADR Repository</title>
-    <link rel="stylesheet" href="assets/adr.css">
-    <link rel="stylesheet" href="assets/style.css">
-</head>
-<body>
-    <header class="site-header">
-        <div class="container">
-            <h1>RegenTribes ADRs</h1>
-            <p>Architecture Decision Records &mdash; MADR format, ASD-STE100</p>
-        </div>
-    </header>
-    <main class="container">
-        <section class="adr-table-section">
-            <table class="adr-table">
-                <thead>
-                    <tr>
-                        <th>ADR</th>
-                        <th>Title</th>
-                        <th>Status</th>
-                        <th>Date</th>
-                        <th>Domain</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {rows}
-                </tbody>
-            </table>
-        </section>
-    </main>
-    <footer class="site-footer">
-        <div class="container">
-            <p>{len(adrs)} Architecture Decision Records &mdash; Generated {datetime.now().strftime('%Y-%m-%d %H:%M')}</p>
-        </div>
-    </footer>
-</body>
-</html>"""
+    footer = f'Generated {datetime.now().strftime("%Y-%m-%d %H:%M")}'
+    heading = f'<h1><a href="index.html">RegenTribes ADRs</a></h1>'
+    return make_base_html(
+        f'ADR {num}: {title}',
+        heading,
+        'Architecture Decision Records \u2014 MADR format, ASD-STE100',
+        main,
+        footer
+    )
 
 
 def main():
@@ -303,26 +289,25 @@ def main():
     adrs = []
 
     for fpath in sorted(DOCS_DIR.glob("????-*.md")):
-        content = fpath.read_text()
-        fm, body = parse_frontmatter(content)
-
+        fm, body = parse_frontmatter(fpath.read_text())
         m = re.match(r'^(\d+)', fpath.stem)
         fm['number'] = int(m.group(1)) if m else 0
-
         sections = extract_sections(body)
         adrs.append(fm)
 
-        html = build_page(fm, sections)
-        num = str(fm['number']).zfill(4)
-        (SITE_DIR / f"adr-{num}.html").write_text(html)
+        html = build_adr_page(fm, sections)
+        num_s = str(fm['number']).zfill(4)
+        (SITE_DIR / f"adr-{num_s}.html").write_text(html)
 
-    # Index page
+    # Index
     (SITE_DIR / "index.html").write_text(build_index_page(adrs))
 
     # Assets
+    assets_dir = SITE_DIR / "assets"
+    assets_dir.mkdir(exist_ok=True)
     for asset in ASSETS_DIR.glob("*"):
         if asset.is_file():
-            (SITE_DIR / asset.name).write_bytes(asset.read_bytes())
+            (assets_dir / asset.name).write_bytes(asset.read_bytes())
 
     # Manifest
     manifest = {
@@ -332,19 +317,18 @@ def main():
         'adrs': sorted([
             {
                 'number': a['number'],
-                'title': a.get('title', ''),
-                'status': a.get('status', ''),
-                'date': a.get('date', ''),
-                'domain': a.get('domain', ''),
-                'level': a.get('level', ''),
-                'authors': a.get('authors', '').split(',') if a.get('authors') else [],
-                'tags': a.get('tags', []),
+                'title': a.get('title',''),
+                'status': a.get('status',''),
+                'date': a.get('date',''),
+                'domain': a.get('domain',''),
+                'level': a.get('level',''),
+                'authors': a.get('authors','').split(',') if a.get('authors') else [],
+                'tags': a.get('tags',[]),
             }
             for a in adrs
         ], key=lambda x: x['number'])
     }
     (SITE_DIR / "manifest.json").write_text(json.dumps(manifest, indent=2))
-
     print(f"Built {len(adrs)} ADRs -> {SITE_DIR}")
 
 

@@ -1,191 +1,28 @@
-/* ADR-specific styles */
-
-/* Status badges */
-.status {
-  display: inline-block;
-  padding: 2px 8px;
-  border-radius: 3px;
-  font-size: 0.8em;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-.status.accepted { background: #d4edda; color: #155724; }
-.status.proposed { background: #fff3cd; color: #856404; }
-.status.deprecated { background: #f8d7da; color: #721c24; }
-.status.superseded { background: #e2e3e5; color: #383d41; }
-.status.rejected { background: #f8d7da; color: #721c24; }
-
-/* ADR article */
-.adr-article {
-  max-width: 860px;
-  margin: 0 auto;
-}
-
-.adr-header {
-  border-bottom: 2px solid #e0e0e0;
-  padding-bottom: 1rem;
-  margin-bottom: 2rem;
-}
-
-.adr-title-heading {
-  font-size: 1.5rem;
-  margin: 0 0 0.75rem;
-  color: #1a1a2e;
-}
-
-.adr-meta {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1rem;
-  align-items: center;
-  font-size: 0.9rem;
-  color: #555;
-  margin-bottom: 0.5rem;
-}
-
-.adr-meta strong {
-  color: #333;
-}
-
-.adr-tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.4rem;
-  margin-top: 0.5rem;
-}
-
-.tag {
-  background: #e8f4f8;
-  color: #0c5460;
-  padding: 2px 8px;
-  border-radius: 12px;
-  font-size: 0.75em;
-  font-family: monospace;
-}
-
-/* Sections */
-.section {
-  margin-bottom: 2.5rem;
-}
-
-.section h1,
-.section h2,
-.section h3,
-.section h4,
-.section h5 {
-  color: #1a1a2e;
-  margin-top: 1.5rem;
-}
-
-.section h2 { font-size: 1.2rem; border-bottom: 1px solid #e0e0e0; padding-bottom: 0.3rem; }
-.section h3 { font-size: 1rem; color: #333; }
-.section h4 { font-size: 0.95rem; color: #555; }
-
-/* Navigation */
-.adr-nav {
-  padding: 1rem 0;
-  border-top: 1px solid #e0e0e0;
-  border-bottom: 1px solid #e0e0e0;
-  margin: 2rem 0;
-}
-
-.adr-nav a {
-  color: #4183c4;
-  text-decoration: none;
-  font-weight: 500;
-}
-
-.adr-nav a:hover {
-  text-decoration: underline;
-}
-
-/* Lists inside sections */
-.section ul,
-.section ol {
-  padding-left: 1.5rem;
-}
-
-.section li {
-  margin-bottom: 0.4rem;
-  line-height: 1.6;
-}
-
-/* Blockquotes */
-.section blockquote {
-  border-left: 4px solid #4183c4;
-  margin: 1rem 0;
-  padding: 0.5rem 1rem;
-  background: #f8f9fa;
-  color: #555;
-}
-
-/* Horizontal rules */
-.section hr {
-  border: none;
-  border-top: 1px solid #e0e0e0;
-  margin: 2rem 0;
-}
-
-/* Inline code */
-.section code {
-  background: #f4f4f4;
-  padding: 1px 5px;
-  border-radius: 3px;
-  font-size: 0.88em;
-  color: #c7254e;
-}
-
-/* Fenced code blocks */
-.section pre {
-  background: #1e1e1e;
-  color: #d4d4d4;
-  padding: 1rem 1.25rem;
-  border-radius: 6px;
-  overflow-x: auto;
-  font-size: 0.85rem;
-  line-height: 1.5;
-}
-
-.section pre code {
-  background: transparent;
-  color: inherit;
-  padding: 0;
-  font-size: inherit;
-}
+/* ADR-specific styles — dark/light via parent body class */
 
 /* Tables */
-table.md-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin: 1rem 0;
-  font-size: 0.9rem;
-}
+table.md-table { width: 100%; border-collapse: collapse; margin: 1rem 0; }
+table.md-table th { background: var(--table-header); padding: 8px 12px; text-align: left; font-weight: 600; border: 1px solid var(--table-border); color: var(--heading); }
+table.md-table td { padding: 8px 12px; border: 1px solid var(--border); vertical-align: top; }
+table.md-table tr:nth-child(even) td { background: var(--table-row-even); }
+table.md-table tr:hover td { background: var(--table-row-hover); }
 
-table.md-table th {
-  background: #f0f0f5;
-  padding: 8px 12px;
-  text-align: left;
-  font-weight: 600;
-  border: 1px solid #d0d0d8;
-  color: #333;
-}
+/* Lists inside sections */
+.section ul, .section ol { padding-left: 1.5rem; }
+.section li { margin-bottom: 0.4rem; line-height: 1.6; }
 
-table.md-table td {
-  padding: 8px 12px;
-  border: 1px solid #e0e0e8;
-  vertical-align: top;
-}
+/* Blockquotes */
+.section blockquote { border-left: 4px solid var(--accent); margin: 1rem 0; padding: 0.5rem 1rem; background: var(--bg-secondary); }
 
-table.md-table tr:nth-child(even) td {
-  background: #fafafa;
-}
+/* Horizontal rules */
+.section hr { border: none; border-top: 1px solid var(--border); margin: 2rem 0; }
 
-table.md-table tr:hover td {
-  background: #f0f7ff;
-}
+/* Inline code */
+.section code { background: var(--code-bg); color: var(--code-text); padding: 1px 5px; border-radius: 3px; font-size: 0.88em; }
+
+/* Fenced code blocks */
+.section pre { background: var(--pre-bg); color: var(--pre-text); padding: 1rem 1.25rem; border-radius: 6px; overflow-x: auto; font-size: 0.85rem; line-height: 1.5; }
+.section pre code { background: transparent; color: inherit; padding: 0; }
 
 /* Status arrows in tables */
-table.md-table td .status {
-  font-size: 0.75em;
-}
+table.md-table td .status { font-size: 0.75em; }
