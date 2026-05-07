@@ -90,4 +90,4 @@ The following chapters were not present in the first report (ADR 0010) and are n
 
 - [[sources/0011-global-manufacturing-civilizational-record|Source — Global Manufacturing Capacity — Complete Civilizational Record]]
 - [[concepts/0011-global-manufacturing-civilizational-record|Concept — Global Manufacturing Capacity — Complete Civilizational Record]]
-- ADR 0010 — Previous version (6-section, superseded)
+- [ADR 0010 — Previous version (6-section, superseded)](adr-0010.html)

@@ -63,6 +63,35 @@ def extract_sections(body):
 def render(text):
     html = text
 
+    # Wikilinks: [[slug]] or [[slug|Display Text]] → convert to proper links
+    # Target is the wiki at https://regentribes.github.io/genesis-zero-bot-wiki/
+    def wikilink(m):
+        full = m.group(0)
+        inner = m.group(1)
+        if '|' in inner:
+            slug, label = inner.split('|', 1)
+        else:
+            slug = inner
+            label = inner
+        slug = slug.strip()
+        label = label.strip()
+        # Determine path: sources/ for .md-style source refs, concepts/ for concept refs
+        if slug.startswith('sources/'):
+            path = slug.replace('sources/', '')
+            url = f'../wiki/sources/{path}.html'
+        elif slug.startswith('concepts/'):
+            path = slug.replace('concepts/', '')
+            url = f'../wiki/concepts/{path}.html'
+        elif slug.startswith('adr-'):
+            url = f'#{slug}'  # internal anchor, no prefix
+        elif '/' not in slug:
+            # bare slug — treat as sources/
+            url = f'../wiki/sources/{slug}.html'
+        else:
+            url = f'../wiki/{slug}.html'
+        return f'<a href="{url}">{label}</a>'
+    html = re.sub(r'\[\[([^\]]+)\]\]', wikilink, html)
+
     # Fenced code blocks
     html = re.sub(r'```(\w*)\n(.*?)```',
         '<pre><code class="language-\\1">\\2</code></pre>',
