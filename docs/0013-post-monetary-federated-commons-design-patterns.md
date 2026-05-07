@@ -69,5 +69,5 @@ Interface mechanisms enable resource acquisition from the existing market withou
 
 ## References
 
-- [Source — Peter Joseph Integral and Common Ground](https://regentribes.github.io/genesis-zero-bot-wiki/sources/0013-peter-joseph-integral-common-ground.html)
+- [[sources/0013-peter-joseph-integral-common-ground|Source — Peter Joseph Integral and Common Ground]]
 - Ostrom, Elinor. Governing the Commons. Cambridge University Press, 1990.
