@@ -1,27 +1,25 @@
-/* ADR-specific styles — dark/light via parent body class */
+/* ADR-specific styles — minimal, no table overrides */
 
-/* Tables */
-table.md-table { width: 100%; border-collapse: collapse; margin: 1rem 0; }
-table.md-table th { background: var(--table-header); padding: 8px 12px; text-align: left; font-weight: 600; border: 1px solid var(--table-border); color: var(--heading); }
-table.md-table td { padding: 8px 12px; border: 1px solid var(--border); vertical-align: top; }
-table.md-table tr:nth-child(even) td { background: var(--table-row-even); }
-table.md-table tr:hover td { background: var(--table-row-hover); }
+/* Tables — use global styles, only add padding override here */
+table.md-table { width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: 0.88rem; }
+table.md-table th { padding: 6px 10px; text-align: left; font-weight: 600; border: 1px solid var(--table-border); }
+table.md-table td { padding: 6px 10px; border: 1px solid var(--table-border); vertical-align: top; background: var(--table-header-bg); }
 
 /* Lists inside sections */
 .section ul, .section ol { padding-left: 1.5rem; }
 .section li { margin-bottom: 0.4rem; line-height: 1.6; }
 
 /* Blockquotes */
-.section blockquote { border-left: 4px solid var(--accent); margin: 1rem 0; padding: 0.5rem 1rem; background: var(--bg-secondary); }
+.section blockquote { border-left: 2px solid var(--border); margin: 0.875rem 0; padding: 0.5rem 0.875rem; color: var(--text-secondary); }
 
 /* Horizontal rules */
-.section hr { border: none; border-top: 1px solid var(--border); margin: 2rem 0; }
+.section hr { border: none; border-top: 1px solid var(--border); margin: 1.25rem 0; }
 
 /* Inline code */
 .section code { background: var(--code-bg); color: var(--code-text); padding: 1px 5px; border-radius: 3px; font-size: 0.88em; }
 
 /* Fenced code blocks */
-.section pre { background: var(--pre-bg); color: var(--pre-text); padding: 1rem 1.25rem; border-radius: 6px; overflow-x: auto; font-size: 0.85rem; line-height: 1.5; }
+.section pre { background: var(--pre-bg); color: var(--pre-text); padding: 0.75rem 1rem; overflow-x: auto; font-size: 0.85em; line-height: 1.55; border: 1px solid var(--border); margin: 0.875rem 0; }
 .section pre code { background: transparent; color: inherit; padding: 0; }
 
 /* Status arrows in tables */
