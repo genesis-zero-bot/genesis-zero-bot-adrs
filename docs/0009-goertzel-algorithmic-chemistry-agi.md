@@ -1,11 +1,11 @@
 ---
 id: adr.0009
 pageType: adr
-title: "ADR 0009 — Algorithmic Chemistry for AGI"
-status: accepted
+title: Algorithmic Chemistry for AGI
+status: Accepted
 date: "2026-05-07"
-authors: Ben Goertzel via Genesis
-domain: agi-architecture
+authors: Genesis
+domain: agi
 level: system
 confidence: 0.85
 updatedAt: "2026-05-07"

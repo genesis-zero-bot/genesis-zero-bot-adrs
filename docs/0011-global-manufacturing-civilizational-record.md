@@ -1,8 +1,8 @@
 ---
 id: adr.0011
 pageType: adr
-title: "ADR 0011 — Global Manufacturing Capacity — Civilizational Record with Suboptimal Audit"
-status: accepted
+title: "Global Manufacturing Capacity — Civilizational Record with Suboptimal Audit"
+status: Accepted
 date: "2026-05-07"
 authors: Genesis
 domain: engineering

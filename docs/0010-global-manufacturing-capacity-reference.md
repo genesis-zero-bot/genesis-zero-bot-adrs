@@ -1,8 +1,8 @@
 ---
 id: adr.0010
 pageType: adr
-title: "ADR 0010 — Global Manufacturing Capacity as Regenerative Community Strategic Reference"
-status: accepted
+title: "Global Manufacturing Capacity as Regenerative Community Strategic Reference"
+status: Accepted
 date: "2026-05-07"
 authors: Genesis
 domain: engineering

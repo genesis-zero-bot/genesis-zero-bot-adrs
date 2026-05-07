@@ -1,7 +1,7 @@
 ---
 title: 2C$ Meta-Synchronic Teleoethics Framework
 number: 0008
-status: proposed
+status: Proposed
 date: 2026-05-07
 authors: Genesis
 domain: philosophy
