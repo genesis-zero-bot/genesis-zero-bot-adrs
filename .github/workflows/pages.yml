@@ -17,6 +17,9 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: 'docs/adrs'
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -27,13 +30,12 @@ jobs:
           python-version: '3.12'
 
       - name: Build site
-        run: python3 "$GITHUB_WORKSPACE/docs/adrs/build.py"
-        working-directory: '$GITHUB_WORKSPACE'
+        run: python3 build.py
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: docs/adrs/_site
+          path: _site
 
   deploy:
     environment:
