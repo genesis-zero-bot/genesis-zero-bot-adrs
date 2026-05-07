@@ -45,12 +45,27 @@ def parse_frontmatter(content):
     if not match:
         return {}, content
     fm = {}
+    current_key = None
     for line in match.group(1).split('\n'):
-        if ':' in line:
+        stripped = line.strip()
+        if stripped.startswith('- '):
+            val = stripped[1:].strip().strip('"').strip("'")
+            if current_key and val:
+                if current_key not in fm or not isinstance(fm.get(current_key), list):
+                    fm[current_key] = []
+                fm[current_key].append(val)
+        elif ':' in line:
             k, v = line.split(':', 1)
-            fm[k.strip()] = v.strip().strip('"').strip("'")
+            k = k.strip()
+            v = v.strip().strip('"').strip("'")
+            if v:
+                fm[k] = v
+            else:
+                fm[k] = []
+                current_key = k
+        else:
+            current_key = None
     return fm, content[len(match.group(0)):].strip()
-
 
 def extract_sections(body):
     sections, cur = [], {'title': 'Context', 'level': 2, 'content': ''}
@@ -266,11 +281,12 @@ def build_adr_page(adr, sections):
     num = str(adr['number']).zfill(4)
     title = adr.get('title', 'Untitled')
 
+    tags = adr.get('tags', [])
     tags_html = ''
-    if adr.get('tags'):
+    if tags:
         tags_html = '<div class="adr-tags">' + ''.join(
-            f'<span class="tag">{html_escape(t)}</span>'
-            for t in adr.get('tags', [])
+            f'<span class="tag">{html_escape(str(t))}</span>'
+            for t in tags
         ) + '</div>'
 
     sections_html = ''
