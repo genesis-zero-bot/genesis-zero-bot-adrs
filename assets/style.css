@@ -23,7 +23,7 @@ ul, ol { list-style: none; padding: 0; margin: 0; }
   --code-text: #1a1a1a;
   --pre-bg: #f5f5f5;
   --pre-text: #1a1a1a;
-  --table-header-bg: #f5f5f5;
+  --table-header-bg: #e9ecef;
   --table-border: #cccccc;
 }
 
@@ -42,7 +42,7 @@ body.dark, body:not(.light) {
   --code-text: #cccccc;
   --pre-bg: #111111;
   --pre-text: #cccccc;
-  --table-header-bg: #111111;
+  --table-header-bg: #000000;
   --table-border: #333333;
 }
 
@@ -78,6 +78,7 @@ main.container {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 0.75rem;
 }
 .site-header h1 {
   font-size: 1.2rem;
@@ -105,6 +106,17 @@ main.container {
   justify-content: center;
   flex-shrink: 0;
 }
+
+/* ── Nav/links ── */
+.site-header nav { display: flex; align-items: center; gap: 0.5rem; }
+.site-header nav a {
+  color: var(--link);
+  font-size: 0.85rem;
+  text-decoration: none;
+  padding: 3px 8px;
+  border-radius: 2px;
+}
+.site-header nav a:hover { color: var(--heading); text-decoration: underline; }
 
 /* ── Footer ── */
 .site-footer {
@@ -173,6 +185,7 @@ table {
   margin: 0.875rem 0;
   font-size: 0.88rem;
   border: 1px solid var(--table-border);
+  background: var(--bg);
 }
 th {
   background: var(--table-header-bg);
@@ -188,7 +201,7 @@ td {
   border: 1px solid var(--table-border);
   vertical-align: top;
   color: var(--text);
-  background: var(--table-header-bg);
+  background: var(--bg);
 }
 
 /* ── ADR specific ── */
