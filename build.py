@@ -24,10 +24,9 @@ THEME_SCRIPT = (
     'var b=document.body,d=b.classList.contains("dark");'
     'b.classList.toggle("dark");b.classList.toggle("light");'
     'var dark=d?"dark":"light";'
-    'var v=[["--bg",!d?"#0d1117":"#ffffff"],["--bg-secondary",!d?"#161b22":"#f8f9fa"],'
-    '["--bg-tertiary",!d?"#21262d":"#e9ecef"],["--text",!d?"#e6edf3":"#1a1a1a"],'
-    '["--text-secondary",!d?"#8b949e":"#6c757d"],["--heading",!d?"#f0f6fc":"#000000"],'
-    '["--accent",!d?"#52b788":"#2d6a4f"],["--border",!d?"#30363d":"#dee2e6"]];'
+    'var v=[["--bg",dark?"#000000":"#ffffff"],["--text",dark?"#888888":"#333333"],'
+    '["--heading",dark?"#ffffff":"#000000"],["--muted",dark?"#555555":"#888888"],'
+    '["--border",dark?"#222222":"#e0e0e0"],["--code-bg",dark?"#0a0a0a":"#f5f5f5"]];'
     'for(var i=0;i<v.length;i++){b.style.setProperty(v[i][0],v[i][1]);'
     'document.documentElement.style.setProperty(v[i][0],v[i][1]);}'
     'localStorage.setItem("theme",b.classList.contains("dark")?"dark":"light");'
@@ -37,10 +36,9 @@ THEME_SCRIPT = (
     'var isDark=!s||s==="dark"||(!s&&window.matchMedia("(prefers-color-scheme:dark)").matches);'
     'if(isDark){document.body.className="dark"}else{document.body.className="light"}'
     'var dark=document.body.classList.contains("dark");'
-    'var v=[["--bg",dark?"#0d1117":"#ffffff"],["--bg-secondary",dark?"#161b22":"#f8f9fa"],'
-    '["--bg-tertiary",dark?"#21262d":"#e9ecef"],["--text",dark?"#e6edf3":"#1a1a1a"],'
-    '["--text-secondary",dark?"#8b949e":"#6c757d"],["--heading",dark?"#f0f6fc":"#000000"],'
-    '["--accent",dark?"#52b788":"#2d6a4f"],["--border",dark?"#30363d":"#dee2e6"]];'
+    'var v=[["--bg",dark?"#000000":"#ffffff"],["--text",dark?"#888888":"#333333"],'
+    '["--heading",dark?"#ffffff":"#000000"],["--muted",dark?"#555555":"#888888"],'
+    '["--border",dark?"#222222":"#e0e0e0"],["--code-bg",dark?"#0a0a0a":"#f5f5f5"]];'
     'for(var i=0;i<v.length;i++){document.body.style.setProperty(v[i][0],v[i][1]);'
     'document.documentElement.style.setProperty(v[i][0],v[i][1]);}'
     '});'
@@ -94,9 +92,7 @@ def render(text):
     html = text
 
     # Wikilinks: [[slug]] or [[slug|Display Text]] → convert to proper links
-    # Target is the wiki at https://regentribes.github.io/genesis-zero-bot-wiki/
     def wikilink(m):
-        full = m.group(0)
         inner = m.group(1)
         if '|' in inner:
             slug, label = inner.split('|', 1)
@@ -105,17 +101,13 @@ def render(text):
             label = inner
         slug = slug.strip()
         label = label.strip()
-        # Determine path: sources/ for .md-style source refs, concepts/ for concept refs
         if slug.startswith('sources/'):
-            path = slug.replace('sources/', '')
-            url = f'../wiki/sources/{path}/'
+            url = f'../wiki/sources/{slug.replace("sources/","")}/'
         elif slug.startswith('concepts/'):
-            path = slug.replace('concepts/', '')
-            url = f'../wiki/concepts/{path}/'
+            url = f'../wiki/concepts/{slug.replace("concepts/","")}/'
         elif slug.startswith('adr-'):
-            url = f'#{slug}'  # internal anchor, no prefix
+            url = f'#{slug}'
         elif '/' not in slug:
-            # bare slug — treat as sources/
             url = f'../wiki/sources/{slug}/'
         else:
             url = f'../wiki/{slug}.html'
@@ -137,7 +129,6 @@ def render(text):
             while i < len(lines) and lines[i].strip().startswith('|'):
                 table_lines.append(lines[i])
                 i += 1
-            # Filter separator rows
             data_rows = [
                 r for r in table_lines
                 if not re.match(r'^\|[\s\-:]+(\|[\s\-:]+)+\|?$', r)
@@ -154,7 +145,7 @@ def render(text):
                     for row in body_rows
                 )
                 out.append(
-                    f'<table class="md-table">'
+                    f'<table>'
                     f'<thead><tr>{th}</tr></thead>'
                     f'<tbody>{tbody}</tbody></table>'
                 )
@@ -163,10 +154,8 @@ def render(text):
             i += 1
     html = '\n'.join(out)
 
-    # HR
     html = re.sub(r'^---+$', '<hr>', html, flags=re.MULTILINE)
 
-    # Inline
     html = re.sub(r'`([^`]+)`', r'<code>\1</code>', html)
     html = re.sub(r'\*\*([^*]+)\*\*', r'<strong>\1</strong>', html)
     html = re.sub(r'\*([^*]+)\*', r'<em>\1</em>', html)
@@ -222,29 +211,25 @@ def make_base_html(title, heading_html, subtitle, main_content, footer_note):
         f'<title>{html_escape(title)}</title>\n'
         '<link rel="stylesheet" href="assets/style.css">\n'
         '<link rel="stylesheet" href="assets/adr.css">\n'
-        '<style></style>\n'
         '</head>\n'
         '<body class="dark">\n'
         '<header class="site-header">\n'
-        '<div class="container">\n'
-        '<div class="header-row">\n'
-        f'{heading_html}\n'
-        f'{THEME_TOGGLE}\n'
-        '</div>\n'
-        f'<p>{subtitle}</p>\n'
-        '</div>\n'
+        '  <div class="container">\n'
+        f'    {heading_html}\n'
+        f'    {THEME_TOGGLE}\n'
+        '  </div>\n'
         '</header>\n'
         '<main class="container">\n'
         f'{main_content}\n'
         '</main>\n'
         '<footer class="site-footer">\n'
-        '<div class="container">\n'
-        f'<p>{footer_note}</p>\n'
-        '</div>\n'
+        '  <div class="container">\n'
+        f'    <p>{footer_note}</p>\n'
+        '  </div>\n'
         '</footer>\n'
         f'{THEME_SCRIPT}\n'
         '</body>\n'
-        '</html>'
+        '</html>\n'
     )
 
 
@@ -266,7 +251,7 @@ def build_index_page(adrs):
     count = len(adrs)
     main = (
         '<section class="adr-table-section">\n'
-        '<table class="adr-table">\n'
+        '<table>\n'
         '<thead><tr>'
         '<th>ADR</th><th>Title</th><th>Status</th><th>Date</th><th>Domain</th>'
         '</tr></thead>\n'
@@ -275,11 +260,11 @@ def build_index_page(adrs):
         '</section>'
     )
     footer = f'{count} ADRs &mdash; Generated {datetime.now().strftime("%Y-%m-%d %H:%M")}'
-    heading = '<h1>RegenTribes ADRs</h1>'
+    heading = '<h1><a href="index.html">RegenTribes ADRs</a></h1>'
     return make_base_html(
         'RegenTribes ADR Repository',
         heading,
-        'Architecture Decision Records \u2014 MADR format, ASD-STE100',
+        '',
         main,
         footer
     )
@@ -338,7 +323,7 @@ def build_adr_page(adr, sections):
     return make_base_html(
         f'ADR {num}: {title}',
         heading,
-        'Architecture Decision Records \u2014 MADR format, ASD-STE100',
+        '',
         main,
         footer
     )
